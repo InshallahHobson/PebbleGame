@@ -45,7 +45,7 @@ public class PebbleGame {
         generateThreads();
         System.out.println("Please enter location of bag number 0 to load:");
         String bagLocation = input.nextLine();
-        initialiseBag("testbag.csv", bagX);
+        initialiseBag(bagLocation, bagX);
         for (int x:bagX) {
             System.out.println(x);
         }
