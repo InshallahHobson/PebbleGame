@@ -26,7 +26,9 @@ public class PebbleGame {
             String line;
             while((line = br.readLine()) != null){
                 String[] values = line.split(",");
-                System.out.println(values);
+                for(String x: values){
+                    bag.add(Integer.parseInt(x));
+                }
             }
         }catch(Exception e){
             e.printStackTrace();
@@ -43,11 +45,19 @@ public class PebbleGame {
         this.noOfPlayers = input.nextInt();
         input.nextLine();
         generateThreads();
+
         System.out.println("Please enter location of bag number 0 to load:");
-        String bagLocation = input.nextLine();
-        initialiseBag(bagLocation, bagX);
-        for (int x:bagX) {
-            System.out.println(x);
-        }
+        String bagLocation0 = input.nextLine();
+        initialiseBag(bagLocation0, bagX);
+
+        System.out.println("Please enter location of bag number 0 to load:");
+        String bagLocation1 = input.nextLine();
+        initialiseBag(bagLocation1, bagY);
+
+        System.out.println("Please enter location of bag number 0 to load:");
+        String bagLocation2 = input.nextLine();
+        initialiseBag(bagLocation2, bagZ);
+
+
     }
 }
