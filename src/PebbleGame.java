@@ -41,10 +41,11 @@ public class PebbleGame {
         Scanner input = new Scanner(System.in);
         System.out.println("Please enter the number of players:");
         this.noOfPlayers = input.nextInt();
+        input.nextLine();
         generateThreads();
         System.out.println("Please enter location of bag number 0 to load:");
         String bagLocation = input.nextLine();
-        //initialiseBag("testbag.csv", bagX);
+        initialiseBag("testbag.csv", bagX);
         for (int x:bagX) {
             System.out.println(x);
         }
