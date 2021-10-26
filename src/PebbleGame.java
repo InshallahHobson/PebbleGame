@@ -1,7 +1,6 @@
-import java.io.FileNotFoundException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Scanner;
-import java.io.File;
 
 public class PebbleGame {
     private int noOfPlayers;
@@ -22,21 +21,19 @@ public class PebbleGame {
         }
     }
 
-    public static void initialiseBag(String bagLocation, ArrayList<Integer> bag) throws FileNotFoundException{
-        try {
-            File file = new File(bagLocation);
-            Scanner reader = new Scanner(file);
-            while(reader.hasNextLine()) {
-                bag.add(reader.nextInt());
+    public static void initialiseBag(String bagLocation, ArrayList<Integer> bag){
+        try(BufferedReader br = new BufferedReader(new FileReader(bagLocation))){
+            String line;
+            while((line = br.readLine()) != null){
+                String[] values = line.split(",");
+                System.out.println(values);
             }
-            reader.close();
-        }  catch (FileNotFoundException e) {
-            System.out.println("File not found.");
+        }catch(Exception e){
             e.printStackTrace();
         }
     }
 
-    public static void main (String[] args) throws Exception {
+    public static void main (String[] args)  {
         new PebbleGame();
     }
 
@@ -47,14 +44,9 @@ public class PebbleGame {
         generateThreads();
         System.out.println("Please enter location of bag number 0 to load:");
         String bagLocation = input.nextLine();
-        try {
-            initialiseBag(bagLocation, bagX);
-        } catch (FileNotFoundException e){
-            e.printStackTrace();;
-        }
+        //initialiseBag("testbag.csv", bagX);
         for (int x:bagX) {
             System.out.println(x);
         }
-        input.close();
     }
 }
