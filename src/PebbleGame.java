@@ -1,13 +1,16 @@
+import java.io.FileNotFoundException;
 import java.util.ArrayList;
 import java.util.Scanner;
+import java.io.File;
+
 public class PebbleGame {
     private int noOfPlayers;
-    private ArrayList<Integer> aContents = new ArrayList<Integer>();
-    private ArrayList<Integer> bContents = new ArrayList<Integer>();
-    private ArrayList<Integer> cContents = new ArrayList<Integer>();
-    private ArrayList<Integer> xContents = new ArrayList<Integer>();
-    private ArrayList<Integer> yContents = new ArrayList<Integer>();
-    private ArrayList<Integer> zContents = new ArrayList<Integer>();
+    private ArrayList<Integer> bagA = new ArrayList<Integer>();
+    private ArrayList<Integer> bagB = new ArrayList<Integer>();
+    private ArrayList<Integer> bagC = new ArrayList<Integer>();
+    private ArrayList<Integer> bagX = new ArrayList<Integer>();
+    private ArrayList<Integer> bagY = new ArrayList<Integer>();
+    private ArrayList<Integer> bagZ = new ArrayList<Integer>();
 
     public void generateThreads() {
         for (int i = 0; i <= this.noOfPlayers; i++) {
@@ -19,7 +22,21 @@ public class PebbleGame {
         }
     }
 
-    public static void main(String[] args) {
+    public static void initialiseBag(String bagLocation, ArrayList<Integer> bag) throws FileNotFoundException{
+        try {
+            File file = new File(bagLocation);
+            Scanner reader = new Scanner(file);
+            while(reader.hasNextLine()) {
+                bag.add(reader.nextInt());
+            }
+            reader.close();
+        }  catch (FileNotFoundException e) {
+            System.out.println("File not found.");
+            e.printStackTrace();
+        }
+    }
+
+    public static void main (String[] args) throws Exception {
         new PebbleGame();
     }
 
@@ -29,7 +46,15 @@ public class PebbleGame {
         this.noOfPlayers = input.nextInt();
         generateThreads();
         System.out.println("Please enter location of bag number 0 to load:");
-
+        String bagLocation = input.nextLine();
+        try {
+            initialiseBag(bagLocation, bagX);
+        } catch (FileNotFoundException e){
+            e.printStackTrace();;
+        }
+        for (int x:bagX) {
+            System.out.println(x);
+        }
         input.close();
     }
 }
