@@ -19,6 +19,7 @@ public class PebbleGame {
     public class Player implements Runnable {
         private ArrayList<Pebble> pebblesInHand = new ArrayList<Pebble>();
         private Boolean won = false;
+        private ArrayList<Pebble> nextDiscardTo;
 
         public Player() {
             players.add(this);
@@ -32,29 +33,39 @@ public class PebbleGame {
             return won;
         }
 
+        public ArrayList<Pebble> getNextDiscardTo() {
+            return nextDiscardTo;
+        }
+
+        public void setNextDiscardTo(ArrayList<Pebble> nextDiscardTo) {
+            this.nextDiscardTo = nextDiscardTo;
+        }
+
         public void chooseStartingPebbles() {
             double randNum = randomNumGen.nextDouble();
             if (randNum < (1.0/3.0)) {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagX);
                     pebblesInHand.add(pebble);
-                    pebble.setDiscardTo(bagA);
+                    this.setNextDiscardTo(bagA);
                 }
             }
             if (randNum < (2.0/3.0)) {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagY);
                     pebblesInHand.add(pebble);
-                    pebble.setDiscardTo(bagB);
+                    this.setNextDiscardTo(bagB);
                 }
             } else {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagZ);
                     pebblesInHand.add(pebble);
-                    pebble.setDiscardTo(bagC);
+                    this.setNextDiscardTo(bagC);
                 }
             }
         }
+
+
 
         public void checkWon() {
             int totalWeight = 0;
@@ -70,24 +81,36 @@ public class PebbleGame {
 
         public void discardPebble() {
             Pebble pebbleToDiscard = drawFrom(pebblesInHand);
-            ArrayList<Pebble> bagToDiscardTo = pebbleToDiscard.getDiscardTo();
-            bagToDiscardTo.add(pebbleToDiscard);
+            nextDiscardTo.add(pebbleToDiscard);
 
         }
 
         public void drawPebble() {
+            double randNum = randomNumGen.nextDouble();
+            if (randNum < (1.0/3.0)) {
+                Pebble pebble = drawFrom(bagX);
+                pebblesInHand.add(pebble);
+                this.setNextDiscardTo(bagA);
+            }
+            if (randNum < (2.0/3.0)) {
+                Pebble pebble = drawFrom(bagY);
+                pebblesInHand.add(pebble);
+                this.setNextDiscardTo(bagB);
+            } else {
+                Pebble pebble = drawFrom(bagZ);
+                pebblesInHand.add(pebble);
+                this.setNextDiscardTo(bagC);
+            }
         }
 
         @Override
         public void run(){
             chooseStartingPebbles();
             checkWon();
-
             while (!this.getWon()) {
                 this.discardPebble();
                 this.drawPebble();
                 checkWon();
-
             }
         }
     }
@@ -150,6 +173,5 @@ public class PebbleGame {
         PebbleGame mainGame = new PebbleGame();
         mainGame.initialisePlayers();
         mainGame.generateThreads();
-
     }
 }
