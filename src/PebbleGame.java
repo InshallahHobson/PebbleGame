@@ -1,23 +1,22 @@
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
 
 public class PebbleGame {
-    private int noOfPlayers;
-    private ArrayList<Player> players = new ArrayList<Player>();
-    private ArrayList<Pebble> bagA = new ArrayList<Pebble>();
-    private ArrayList<Pebble> bagB = new ArrayList<Pebble>();
-    private ArrayList<Pebble> bagC = new ArrayList<Pebble>();
-    private ArrayList<Pebble> bagX = new ArrayList<Pebble>();
-    private ArrayList<Pebble> bagY = new ArrayList<Pebble>();
-    private ArrayList<Pebble> bagZ = new ArrayList<Pebble>();
+    final private int noOfPlayers;
+    private ArrayList<Player> players = new ArrayList<>();
+    private ArrayList<Pebble> bagA = new ArrayList<>();
+    private ArrayList<Pebble> bagB = new ArrayList<>();
+    private ArrayList<Pebble> bagC = new ArrayList<>();
+    private ArrayList<Pebble> bagX = new ArrayList<>();
+    private ArrayList<Pebble> bagY = new ArrayList<>();
+    private ArrayList<Pebble> bagZ = new ArrayList<>();
     static Random randomNumGen = new Random();
 
 
     public class Player implements Runnable {
-        private ArrayList<Pebble> pebblesInHand = new ArrayList<Pebble>();
+        private ArrayList<Pebble> pebblesInHand = new ArrayList<>();
         private Boolean won = false;
         private ArrayList<Pebble> nextDiscardTo;
 
@@ -65,8 +64,6 @@ public class PebbleGame {
             }
         }
 
-
-
         public void checkWon() {
             int totalWeight = 0;
             for (Pebble pebble : pebblesInHand) {
@@ -91,16 +88,26 @@ public class PebbleGame {
                 Pebble pebble = drawFrom(bagX);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagA);
+                if (bagX.size() == 0) {
+                    emptyWhiteBag(bagA);
+                }
             }
             if (randNum < (2.0/3.0)) {
                 Pebble pebble = drawFrom(bagY);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagB);
+                if (bagY.size() == 0) {
+                    emptyWhiteBag(bagB);
+                }
             } else {
                 Pebble pebble = drawFrom(bagZ);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagC);
+                if (bagZ.size() == 0) {
+                    emptyWhiteBag(bagC);
+                }
             }
+
         }
 
         @Override
@@ -112,10 +119,13 @@ public class PebbleGame {
                 this.drawPebble();
                 checkWon();
             }
+            System.out.println(this + "has finished!");
+            //notify();
         }
     }
 
     public static Pebble drawFrom(ArrayList<Pebble> bag) {
+        System.out.println(bag.size());
         int index = randomNumGen.nextInt(bag.size());
         Pebble pebble = bag.get(index);
         bag.remove(index);
@@ -123,8 +133,8 @@ public class PebbleGame {
     }
 
     public void generateThreads() {
-        for(int i=0; i<this.players.size(); i++){
-            new Thread(this.players.get(i));
+        for (Player player : this.players) {
+            new Thread(player).start();
         }
     }
 
@@ -134,11 +144,32 @@ public class PebbleGame {
             while((line = br.readLine()) != null){
                 String[] values = line.split(",");
                 for(String x: values){
+                    x = x.replaceAll("\\s+","");
+                    x = x.replace("\n", "");
                     bag.add(new Pebble(Integer.parseInt(x)));
                 }
             }
         }catch(Exception e){
             e.printStackTrace();
+        }
+    }
+
+    public void emptyWhiteBag(ArrayList<Pebble> whiteBag) {
+        if (whiteBag == bagA) {
+            for (int i = 0; i < bagA.size(); i++) {
+                Pebble pebble = bagA.remove(i);
+                bagX.add(pebble);
+            }
+        } else if (whiteBag == bagB) {
+            for (int i = 0; i < bagB.size(); i++) {
+                Pebble pebble = bagB.remove(i);
+                bagY.add(pebble);
+            }
+        } else if (whiteBag == bagC) {
+            for (int i = 0; i < bagC.size(); i++) {
+                Pebble pebble = bagC.remove(i);
+                bagZ.add(pebble);
+            }
         }
     }
 
@@ -163,14 +194,15 @@ public class PebbleGame {
 
     public void initialisePlayers(){
         for (int i = 1; i <= this.noOfPlayers; i++) {
-            Player p = new Player();
-            // testing - Pebble[] ps = p.getPebblesInHand();
-
+            new Player();
         }
     }
 
     public static void main (String[] args)  {
         PebbleGame mainGame = new PebbleGame();
+        //for(Pebble p:mainGame.bagA) {
+            //System.out.println(p.getWeight());
+        //};
         mainGame.initialisePlayers();
         mainGame.generateThreads();
     }
