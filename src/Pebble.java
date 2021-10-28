@@ -8,6 +8,10 @@ public class Pebble {
         return weight;
     }
 
+    public ArrayList<Pebble> getDiscardTo() {
+        return discardTo;
+    }
+
     public void setDiscardTo(ArrayList<Pebble> discardTo) {
         this.discardTo = discardTo;
     }

@@ -1,11 +1,12 @@
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Random;
 
 public class PebbleGame {
     private int noOfPlayers;
-    private ArrayList<Player> players;
+    private ArrayList<Player> players = new ArrayList<Player>();
     private ArrayList<Pebble> bagA = new ArrayList<Pebble>();
     private ArrayList<Pebble> bagB = new ArrayList<Pebble>();
     private ArrayList<Pebble> bagC = new ArrayList<Pebble>();
@@ -15,17 +16,15 @@ public class PebbleGame {
     static Random randomNumGen = new Random();
 
 
-    public class Player {
-        private Pebble[] pebblesInHand = new Pebble[10];
+    public class Player implements Runnable {
+        private ArrayList<Pebble> pebblesInHand = new ArrayList<Pebble>();
         private Boolean won = false;
 
         public Player() {
             players.add(this);
-            chooseStartingPebbles();
-            checkWon();
         }
 
-        public Pebble[] getPebblesInHand(){
+        public ArrayList<Pebble> getPebblesInHand(){
             return pebblesInHand;
         }
 
@@ -38,20 +37,20 @@ public class PebbleGame {
             if (randNum < (1.0/3.0)) {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagX);
-                    pebblesInHand[i] = pebble;
+                    pebblesInHand.add(pebble);
                     pebble.setDiscardTo(bagA);
                 }
             }
             if (randNum < (2.0/3.0)) {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagY);
-                    pebblesInHand[i] = pebble;
+                    pebblesInHand.add(pebble);
                     pebble.setDiscardTo(bagB);
                 }
             } else {
                 for (int i = 0; i <= 9; i++) {
                     Pebble pebble = drawFrom(bagZ);
-                    pebblesInHand[i] = pebble;
+                    pebblesInHand.add(pebble);
                     pebble.setDiscardTo(bagC);
                 }
             }
@@ -70,10 +69,26 @@ public class PebbleGame {
         }
 
         public void discardPebble() {
+            Pebble pebbleToDiscard = drawFrom(pebblesInHand);
+            ArrayList<Pebble> bagToDiscardTo = pebbleToDiscard.getDiscardTo();
+            bagToDiscardTo.add(pebbleToDiscard);
 
         }
 
         public void drawPebble() {
+        }
+
+        @Override
+        public void run(){
+            chooseStartingPebbles();
+            checkWon();
+
+            while (!this.getWon()) {
+                this.discardPebble();
+                this.drawPebble();
+                checkWon();
+
+            }
         }
     }
 
@@ -85,17 +100,8 @@ public class PebbleGame {
     }
 
     public void generateThreads() {
-        for (int i = 0; i <= this.players.size(); i++) {
-            Player currentPlayer = players.get(i);
-            new Thread(Integer.toString(i)) {
-                public void run() {
-                    while (!currentPlayer.getWon()) {
-                        currentPlayer.discardPebble();
-                        currentPlayer.drawPebble();
-
-                    }
-                }
-            }.start();
+        for(int i=0; i<this.players.size(); i++){
+            new Thread(this.players.get(i));
         }
     }
 
@@ -135,10 +141,7 @@ public class PebbleGame {
     public void initialisePlayers(){
         for (int i = 1; i <= this.noOfPlayers; i++) {
             Player p = new Player();
-            Pebble[] ps = p.getPebblesInHand();
-
-
-
+            // testing - Pebble[] ps = p.getPebblesInHand();
 
         }
     }
