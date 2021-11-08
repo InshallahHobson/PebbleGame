@@ -165,6 +165,22 @@ public class PebbleGame {
 
         //public void write2FileDiscard () {}
 
+        public synchronized static Pebble drawFrom(List<Pebble> bag) {
+            synchronized (bag){
+                int index;
+                if (bag.size() == 1) {
+                    index = 0;
+                } else {
+                    index = randomNumGen.nextInt(bag.size());
+                }
+                Pebble pebble = bag.get(index);
+                //System.out.println("index: " + index + ", bag contains " + bag.size() + "pebbles.");
+                bag.remove(index);
+                return pebble;
+            }
+
+        }
+
         @Override
         public void run(){
             chooseStartingPebbles();
@@ -180,19 +196,6 @@ public class PebbleGame {
             System.out.println(this + "has finished!");
             //notify();
         }
-    }
-
-    public synchronized static Pebble drawFrom(List<Pebble> bag) {
-        int index;
-        if (bag.size() == 1) {
-            index = 0;
-        } else {
-            index = randomNumGen.nextInt(bag.size());
-        }
-        Pebble pebble = bag.get(index);
-        //System.out.println("index: " + index + ", bag contains " + bag.size() + "pebbles.");
-        bag.remove(index);
-        return pebble;
     }
 
     public void generateThreads() {
