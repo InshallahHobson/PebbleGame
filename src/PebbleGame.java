@@ -1,24 +1,22 @@
+import javax.lang.model.type.NullType;
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Scanner;
-import java.util.Random;
+import java.util.*;
 
 public class PebbleGame {
     final private int noOfPlayers;
     private ArrayList<Player> players = new ArrayList<>();
-    private ArrayList<Pebble> bagA = new ArrayList<>();
-    private ArrayList<Pebble> bagB = new ArrayList<>();
-    private ArrayList<Pebble> bagC = new ArrayList<>();
-    private ArrayList<Pebble> bagX = new ArrayList<>();
-    private ArrayList<Pebble> bagY = new ArrayList<>();
-    private ArrayList<Pebble> bagZ = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagA = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagB = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagC = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagX = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagY = new ArrayList<>();
+    private volatile ArrayList<Pebble> bagZ = new ArrayList<>();
+    private Boolean continuePlaying = true;
     static Random randomNumGen = new Random();
 
 
     public class Player implements Runnable {
         private ArrayList<Pebble> pebblesInHand = new ArrayList<>();
-        private Boolean won = false;
         private ArrayList<Pebble> nextDiscardTo;
         private int playerValue;
 
@@ -41,10 +39,6 @@ public class PebbleGame {
                 formattedPebblesInHand += ", " + String.valueOf(pebblesInHand.get(i).getWeight());
             }
             return formattedPebblesInHand;
-        }
-
-        public Boolean getWon() {
-            return won;
         }
 
         public ArrayList<Pebble> getNextDiscardTo() {
@@ -82,12 +76,14 @@ public class PebbleGame {
         public void checkWon() {
             int totalWeight = 0;
             for (Pebble pebble : pebblesInHand) {
+                if (Objects.isNull(pebble)) {
+                    //System.out.println("pebble is null");
+                } else {
                     totalWeight += pebble.getWeight();
+                }
             }
             if (totalWeight == 100) {
-                won = true;
-            } else {
-                won = false;
+                continuePlaying = false;
             }
         }
 
@@ -95,82 +91,90 @@ public class PebbleGame {
             Pebble pebbleToDiscard = drawFrom(pebblesInHand);
             nextDiscardTo.add(pebbleToDiscard);
             return pebbleToDiscard;
-
         }
 
         public Pebble drawPebble() {
             //Issues with black bags becoming empty
             double randNum = randomNumGen.nextDouble();
             if (randNum < (1.0/3.0)) {
+                if (bagX.size() == 0) {
+                    //System.out.println("BEFORE - white bag: " + bagA.size() + ", black bag: " + bagX.size());
+                    synchronized (this) {emptyWhiteBag(bagA);}
+                    //System.out.println("AFTER - white bag: " + bagA.size() + ", black bag: " + bagX.size());
+                }
                 Pebble pebble = drawFrom(bagX);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagA);
-                if (bagX.size() == 0) {
-                    emptyWhiteBag(bagA);
-                }
                 return pebble;
             }
             if (randNum < (2.0/3.0)) {
+                if (bagY.size() == 0) {
+                    //System.out.println("BEFORE - white bag: " + bagB.size() + ", black bag: " + bagY.size());
+                    synchronized (this) {emptyWhiteBag(bagB);}
+                    //System.out.println("AFTER - white bag: " + bagB.size() + ", black bag: " + bagY.size());
+                }
                 Pebble pebble = drawFrom(bagY);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagB);
-                if (bagY.size() == 0) {
-                    emptyWhiteBag(bagB);
-                }
                 return pebble;
             } else {
+                if (bagZ.size() == 0) {
+                    //System.out.println("BEFORE - white bag: " + bagC.size() + ", black bag: " + bagZ.size());
+                    synchronized (this) {emptyWhiteBag(bagC);}
+                    //System.out.println("AFTER - white bag: " + bagC.size() + ", black bag: " + bagZ.size());
+                }
                 Pebble pebble = drawFrom(bagZ);
                 pebblesInHand.add(pebble);
                 this.setNextDiscardTo(bagC);
-                if (bagZ.size() == 0) {
-                    emptyWhiteBag(bagC);
-                }
                 return pebble;
             }
 
         }
 
-        public void writeToFileDraw(Player player, Pebble p){
+        //public void writeToFileDraw(Player player, Pebble p){
             // add bag
-            try{
-                FileWriter myWriter = new FileWriter("player" +
-                        player.getPlayerValue() + "_output.txt");
-                myWriter.write(String.format("player%d has drawn a %d from bag\n",
-                        playerValue,p.getWeight()));
-                myWriter.write(String.format("player%d hand is %s",player.getPlayerValue(),
-                        player.getPebblesInHandFormatted()));
-                myWriter.close();
-            }catch(IOException e){
-                System.out.println("An error has occurred");
-                e.printStackTrace();
-            }
+            //try{
+                //FileWriter myWriter = new FileWriter("player" +
+                        //player.getPlayerValue() + "_output.txt");
+                //myWriter.write(String.format("player%d has drawn a %d from bag\n",
+                        //playerValue,p.getWeight()));
+                //myWriter.write(String.format("player%d hand is %s",player.getPlayerValue(),
+                        //player.getPebblesInHandFormatted()));
+                //myWriter.close();
+            //}catch(IOException e){
+                //System.out.println("An error has occurred");
+                //e.printStackTrace();
+            //}
 
-        }
-        public void writeToFileDiscard(Player player, Pebble p){
+        //}
+        //public void writeToFileDiscard(Player player, Pebble p){
             // add bag
-            try{
-                FileWriter myWriter = new FileWriter("player" +
-                        player.getPlayerValue() + "_output.txt");
-                myWriter.write(String.format("player%d has discarded a %d from bag\n",
-                        playerValue,p.getWeight()));
-                myWriter.write(String.format("player%d hand is %s",player.getPlayerValue(),
-                        player.getPebblesInHandFormatted()));
-                myWriter.close();
-            }catch(IOException e){
-                System.out.println("An error has occurred");
-                e.printStackTrace();
-            }
-        }
+            //try{
+                //FileWriter myWriter = new FileWriter("player" +
+                        //player.getPlayerValue() + "_output.txt");
+                //myWriter.write(String.format("player%d has discarded a %d from bag\n",
+                        //playerValue,p.getWeight()));
+                //myWriter.write(String.format("player%d hand is %s",player.getPlayerValue(),
+                        //player.getPebblesInHandFormatted()));
+                //myWriter.close();
+            //}catch(IOException e){
+               // System.out.println("An error has occurred");
+                //e.printStackTrace();
+            //}
+        //}
+
+        //public void write2FileDiscard () {}
 
         @Override
         public void run(){
-            chooseStartingPebbles();
+            synchronized (this) {chooseStartingPebbles();}
             checkWon();
-            while (!this.getWon()) {
+            while (continuePlaying) {
                 Pebble pebbleDiscarded = this.discardPebble();
-                this.writeToFileDiscard(this, pebbleDiscarded);
+                //this.writeToFileDiscard(this, pebbleDiscarded);
                 Pebble pebbleDrawn = this.drawPebble();
-                this.writeToFileDraw(this, pebbleDrawn);
+                //this.writeToFileDraw(this, pebbleDrawn);
+                //System.out.println(getPebblesInHand());
                 checkWon();
             }
             System.out.println(this + "has finished!");
@@ -179,8 +183,14 @@ public class PebbleGame {
     }
 
     public static Pebble drawFrom(ArrayList<Pebble> bag) {
-        int index = randomNumGen.nextInt(bag.size());
+        int index;
+        if (bag.size() == 1) {
+            index = 0;
+        } else {
+            index = randomNumGen.nextInt(bag.size());
+        }
         Pebble pebble = bag.get(index);
+        //System.out.println("index: " + index + ", bag contains " + bag.size() + "pebbles.");
         bag.remove(index);
         return pebble;
     }
@@ -210,19 +220,22 @@ public class PebbleGame {
     public void emptyWhiteBag(ArrayList<Pebble> whiteBag) {
         if (whiteBag == bagA) {
             for (int i = 0; i < bagA.size(); i++) {
-                Pebble pebble = bagA.remove(i);
+                Pebble pebble = bagA.get(i);
                 bagX.add(pebble);
             }
+            bagA.clear();
         } else if (whiteBag == bagB) {
             for (int i = 0; i < bagB.size(); i++) {
-                Pebble pebble = bagB.remove(i);
+                Pebble pebble = bagB.get(i);
                 bagY.add(pebble);
             }
+            bagB.clear();
         } else if (whiteBag == bagC) {
             for (int i = 0; i < bagC.size(); i++) {
-                Pebble pebble = bagC.remove(i);
+                Pebble pebble = bagC.get(i);
                 bagZ.add(pebble);
             }
+            bagC.clear();
         }
     }
 
