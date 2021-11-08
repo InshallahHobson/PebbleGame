@@ -5,19 +5,19 @@ import java.util.*;
 public class PebbleGame {
     final private int noOfPlayers;
     private ArrayList<Player> players = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagA = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagB = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagC = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagX = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagY = new ArrayList<>();
-    private volatile ArrayList<Pebble> bagZ = new ArrayList<>();
+    private List<Pebble> bagA = Collections.synchronizedList(new ArrayList<Pebble>());
+    private List<Pebble> bagB = Collections.synchronizedList(new ArrayList<Pebble>());
+    private List<Pebble> bagC = Collections.synchronizedList(new ArrayList<Pebble>());
+    private List<Pebble> bagX = Collections.synchronizedList(new ArrayList<Pebble>());
+    private List<Pebble> bagY = Collections.synchronizedList(new ArrayList<Pebble>());
+    private List<Pebble> bagZ = Collections.synchronizedList(new ArrayList<Pebble>());
     private Boolean continuePlaying = true;
     static Random randomNumGen = new Random();
 
 
     public class Player implements Runnable {
         private ArrayList<Pebble> pebblesInHand = new ArrayList<>();
-        private ArrayList<Pebble> nextDiscardTo;
+        private List<Pebble> nextDiscardTo;
         private int playerValue;
 
         public Player() {
@@ -41,15 +41,15 @@ public class PebbleGame {
             return formattedPebblesInHand;
         }
 
-        public ArrayList<Pebble> getNextDiscardTo() {
+        public List<Pebble> getNextDiscardTo() {
             return nextDiscardTo;
         }
 
-        public void setNextDiscardTo(ArrayList<Pebble> nextDiscardTo) {
+        public void setNextDiscardTo(List<Pebble> nextDiscardTo) {
             this.nextDiscardTo = nextDiscardTo;
         }
 
-        public void chooseStartingPebbles() {
+        public synchronized void chooseStartingPebbles() {
             double randNum = randomNumGen.nextDouble();
             if (randNum < (1.0/3.0)) {
                 for (int i = 0; i <= 9; i++) {
@@ -87,13 +87,13 @@ public class PebbleGame {
             }
         }
 
-        public Pebble discardPebble() {
+        public synchronized Pebble discardPebble() {
             Pebble pebbleToDiscard = drawFrom(pebblesInHand);
             nextDiscardTo.add(pebbleToDiscard);
             return pebbleToDiscard;
         }
 
-        public Pebble drawPebble() {
+        public synchronized Pebble drawPebble() {
             //Issues with black bags becoming empty
             double randNum = randomNumGen.nextDouble();
             if (randNum < (1.0/3.0)) {
@@ -167,7 +167,7 @@ public class PebbleGame {
 
         @Override
         public void run(){
-            synchronized (this) {chooseStartingPebbles();}
+            chooseStartingPebbles();
             checkWon();
             while (continuePlaying) {
                 Pebble pebbleDiscarded = this.discardPebble();
@@ -182,7 +182,7 @@ public class PebbleGame {
         }
     }
 
-    public static Pebble drawFrom(ArrayList<Pebble> bag) {
+    public synchronized static Pebble drawFrom(List<Pebble> bag) {
         int index;
         if (bag.size() == 1) {
             index = 0;
@@ -201,7 +201,7 @@ public class PebbleGame {
         }
     }
 
-    public static void initialiseBag(String bagLocation, ArrayList<Pebble> bag){
+    public static void initialiseBag(String bagLocation, List<Pebble> bag){
         try(BufferedReader br = new BufferedReader(new FileReader(bagLocation))){
             String line;
             while((line = br.readLine()) != null){
@@ -217,7 +217,7 @@ public class PebbleGame {
         }
     }
 
-    public void emptyWhiteBag(ArrayList<Pebble> whiteBag) {
+    public synchronized void emptyWhiteBag(List<Pebble> whiteBag) {
         if (whiteBag == bagA) {
             for (int i = 0; i < bagA.size(); i++) {
                 Pebble pebble = bagA.get(i);
