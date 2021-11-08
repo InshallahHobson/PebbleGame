@@ -1,5 +1,6 @@
 import java.io.*;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 import java.util.Random;
 
@@ -98,6 +99,7 @@ public class PebbleGame {
         }
 
         public Pebble drawPebble() {
+            //Issues with black bags becoming empty
             double randNum = randomNumGen.nextDouble();
             if (randNum < (1.0/3.0)) {
                 Pebble pebble = drawFrom(bagX);
@@ -167,18 +169,7 @@ public class PebbleGame {
             while (!this.getWon()) {
                 Pebble pebbleDiscarded = this.discardPebble();
                 this.writeToFileDiscard(this, pebbleDiscarded);
-
-                //Pebble pebbleDrawn = this.drawPebble();
-                Pebble pebbleDrawn = null;
-                Boolean wasPebbleDrawn = false;
-                while(wasPebbleDrawn == false){
-                    pebbleDrawn = this.drawPebble();
-                    wasPebbleDrawn = true;
-                    if(pebbleDrawn == null){
-                        wasPebbleDrawn = false;
-                    }
-                }
-
+                Pebble pebbleDrawn = this.drawPebble();
                 this.writeToFileDraw(this, pebbleDrawn);
                 checkWon();
             }
